@@ -1,0 +1,451 @@
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography - Literata from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,500;0,7..72,900;1,7..72,300&display=swap');
+
+/* Root Variables - exact values from original site */
+:root {
+  --bg-color: rgb(248, 247, 245);
+  --text-color: rgb(95, 95, 95);
+  --heading-color: rgb(25, 25, 25);
+  --font-family: Literata, serif;
+  --font-size-body: 19.0144px;
+  --font-size-heading: 44.048px;
+  --line-height-body: 30.423px;
+  --line-height-heading: 44.929px;
+  --letter-spacing-body: -0.190144px;
+  --letter-spacing-heading: -0.88096px;
+}
+
+/* Body - exact match */
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  font-weight: 300;
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-body);
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main Layout - Two Columns */
+.site-container {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  padding: 0;
+}
+
+/* Sidebar - exact positioning from original: nav at x:47, y:30 */
+.sidebar {
+  width: 168px;
+  flex-shrink: 0;
+  padding: 0;
+  position: relative;
+}
+
+.sidebar nav {
+  position: fixed;
+  top: 30px;
+  left: 47px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Hamburger menu button - 24x24px per original */
+.sidebar .menu-icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar .menu-icon::before,
+.sidebar .menu-icon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 24px;
+  height: 1px;
+  background-color: var(--heading-color);
+}
+
+.sidebar .menu-icon::before {
+  top: 8px;
+}
+
+.sidebar .menu-icon::after {
+  top: 15px;
+}
+
+/* Sidebar title - exact styles from original */
+.sidebar .site-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--font-family);
+  font-size: 28.6144px;
+  font-weight: 900;
+  letter-spacing: 2.4px;
+  line-height: 45.783px;
+  text-transform: lowercase;
+  color: var(--text-color);
+  text-decoration: none;
+  margin-top: 10px;
+}
+
+.sidebar .site-title:hover {
+  text-decoration: underline;
+}
+
+/* Main Content - starts at x:168 per original, h2 at y:188 means ~138px top padding */
+.main-content {
+  flex: 1;
+  padding-top: 138px;
+  padding-left: 0;
+  padding-right: 40px;
+  padding-bottom: 80px;
+  max-width: 1062px;
+}
+
+/* Post List */
+.post-list {
+  list-style: none;
+}
+
+/* Post spacing - calculated from original: h2 at y:188, next h2 at y:565 = 377px apart
+   Post content height is roughly 180px (title ~45px + gap ~19px + excerpt ~120px)
+   So margin-bottom = 377 - 180 = ~197px */
+.post-item {
+  margin-bottom: 195px;
+}
+
+.post-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Post title - exact match from original */
+.post-title {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: 500;
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-heading);
+  margin: 0;
+  padding: 0;
+}
+
+.post-title a {
+  color: var(--heading-color);
+  text-decoration: none;
+}
+
+.post-title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+/* Post excerpt - paragraph width ~743px per original */
+.post-excerpt {
+  margin: 0;
+  padding: 0;
+  max-width: 743px;
+  margin-top: 19px;
+}
+
+.post-excerpt .read-more {
+  color: var(--text-color);
+  text-decoration: underline;
+  display: inline-block;
+}
+
+.post-excerpt .read-more:hover {
+  color: var(--heading-color);
+}
+
+/* Single Post */
+.post-content {
+  margin-bottom: 60px;
+  max-width: 743px;
+}
+
+.post-content h1 {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: 500;
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-heading);
+  color: var(--heading-color);
+  margin-bottom: 30px;
+}
+
+.post-content p {
+  margin-bottom: 1.5em;
+}
+
+.post-content a {
+  color: var(--heading-color);
+  text-decoration: underline;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 80px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.pagination a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.pagination a:hover {
+  color: var(--heading-color);
+}
+
+.pagination .current {
+  color: var(--heading-color);
+  font-weight: 500;
+}
+
+/* Floating Subscribe Button - exact styles from original */
+.subscribe-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.subscribe-float button {
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20.8px;
+  letter-spacing: normal;
+  color: var(--bg-color);
+  background-color: var(--heading-color);
+  padding: 15px 23px;
+  border: none;
+  cursor: pointer;
+}
+
+.subscribe-float button:hover {
+  opacity: 0.9;
+}
+
+.subscribe-float-link {
+  text-decoration: none;
+}
+
+/* Footer - white background with large title */
+.site-footer {
+  background-color: rgb(255, 255, 255);
+  color: var(--heading-color);
+  padding: 80px 40px 60px;
+  margin-top: 19.2px;
+  border-top: none;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 47px; /* align with sidebar */
+}
+
+.footer-title {
+  font-family: var(--font-family);
+  font-size: 184px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  margin-bottom: 0;
+  color: var(--heading-color);
+}
+
+.footer-tagline {
+  font-family: var(--font-family);
+  font-size: 34px;
+  font-weight: 300;
+  color: var(--heading-color);
+  margin-top: 19.2px;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.footer-subscribe {
+  max-width: 600px;
+}
+
+.footer-subscribe form {
+  display: flex;
+  gap: 0;
+}
+
+.footer-subscribe input[type="email"] {
+  flex: 1;
+  padding: 15px 23px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  border: 1px solid rgb(118, 118, 118);
+  border-right: none;
+  border-radius: 50px 0 0 50px;
+  background: rgb(255, 255, 255);
+  color: rgb(0, 0, 0);
+  line-height: 20.8px;
+}
+
+.footer-subscribe input[type="email"]::placeholder {
+  color: rgb(0, 0, 0);
+  opacity: 0.5;
+}
+
+.footer-subscribe input[type="email"]:focus {
+  outline: none;
+  border-color: var(--heading-color);
+}
+
+.footer-subscribe button {
+  padding: 15px 23px;
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20.8px;
+  background: var(--heading-color);
+  color: var(--bg-color);
+  border: 1px solid transparent;
+  border-radius: 0 50px 50px 0;
+  cursor: pointer;
+}
+
+.footer-subscribe button:hover {
+  opacity: 0.9;
+}
+
+.footer-bottom {
+  margin-top: 60px;
+  padding-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.footer-bottom a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.footer-bottom a:hover {
+  color: var(--heading-color);
+}
+
+/* Author Page */
+.author-content h1 {
+  font-family: var(--font-family);
+  font-size: var(--font-size-heading);
+  font-weight: 500;
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-heading);
+  color: var(--heading-color);
+  margin-bottom: 30px;
+}
+
+.author-content {
+  max-width: 743px;
+}
+
+.author-content p {
+  margin-bottom: 1.5em;
+}
+
+.author-content a {
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
+.author-content a:hover {
+  color: var(--heading-color);
+}
+
+.author-list {
+  margin: 0 0 1.5em 1.5em;
+  padding: 0;
+}
+
+.author-list li {
+  margin-bottom: 0.5em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .site-container {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 20px;
+    position: relative;
+  }
+
+  .sidebar nav {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .sidebar .site-title {
+    writing-mode: horizontal-tb;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .post-title {
+    font-size: 32px;
+    line-height: 1.1;
+  }
+
+  .post-item {
+    margin-bottom: 80px;
+  }
+
+  .post-content h1,
+  .author-content h1 {
+    font-size: 32px;
+  }
+
+  .footer-title {
+    font-size: 36px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .subscribe-float {
+    bottom: 10px;
+    right: 10px;
+  }
+}
