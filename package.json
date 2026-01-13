@@ -1,0 +1,19 @@
+{
+  "name": "rascunhos_blog",
+  "version": "1.0.0",
+  "description": "",
+  "main": "analyze-site.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:64381/git/hhpmacedo/rascunhos_blog"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.57.0"
+  }
+}
