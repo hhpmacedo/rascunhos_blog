@@ -36,31 +36,16 @@ site/
 └── page/                   # Pagination pages (2.html, 3.html, etc.)
 ```
 
-## Email Subscription Setup (Buttondown)
+## Email Subscription (Buttondown)
 
-The site uses Buttondown for email subscriptions. To activate:
+The site uses Buttondown (username: `hhmacedo`) for email subscriptions:
+- Footer forms submit to Buttondown's embed API
+- Floating subscribe buttons link to Buttondown's hosted page
+- Newsletters are sent manually via the Buttondown dashboard
 
-1. Create a Buttondown account at https://buttondown.email
-2. Get the username from the account settings
-3. Replace `BUTTONDOWN_USERNAME` with the actual username in all HTML files:
-   - `site/index.html`
-   - `site/o-culpado/index.html`
-   - `site/posts/*.html`
-   - `site/page/*.html`
+## RSS Feed
 
-The placeholder appears in:
-- Footer subscription forms: `buttondown.email/api/emails/embed-subscribe/BUTTONDOWN_USERNAME`
-- Floating subscribe buttons: `buttondown.email/BUTTONDOWN_USERNAME`
-
-## RSS Feed & Automatic Newsletters
-
-The site has an RSS feed (`site/feed.xml`) that Buttondown can monitor to automatically send new posts to subscribers.
-
-### Setup in Buttondown:
-1. Go to Buttondown Settings → Automations
-2. Enable "RSS to email" feature
-3. Enter RSS feed URL: `https://rascunhos.blog/feed.xml`
-4. Configure frequency (immediate, daily digest, weekly digest)
+The site has an RSS feed (`site/feed.xml`) that readers can subscribe to directly.
 
 ### Adding New Posts to RSS:
 When publishing a new blog post, add a new `<item>` to `feed.xml`:
@@ -76,6 +61,15 @@ When publishing a new blog post, add a new `<item>` to `feed.xml`:
 ```
 
 Add new items at the top of the `<channel>` section (after `<atom:link>`), and update `<lastBuildDate>` to the current date.
+
+## Feature Backlog
+
+Features to implement later:
+
+- **RSS-to-email automation**: Automatically send new posts to newsletter subscribers. Options:
+  - Buttondown paid plan (enables RSS monitoring)
+  - Switch to Mailchimp (free tier includes RSS-to-email)
+  - Switch to MailerLite (free tier includes RSS-to-email)
 
 ## Working Conventions
 
