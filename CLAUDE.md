@@ -36,6 +36,13 @@ site/
 └── page/                   # Pagination pages (2.html, 3.html, etc.)
 ```
 
+## Analytics (GoatCounter)
+
+The site uses GoatCounter for privacy-friendly visitor tracking:
+- Dashboard: https://rascunhos.goatcounter.com
+- Script added to all HTML pages (no cookies, GDPR-compliant)
+- Tracks pageviews per page, referrers, and basic browser info
+
 ## Email Subscription (Buttondown)
 
 The site uses Buttondown (username: `hhmacedo`) for email subscriptions:
