@@ -60,11 +60,27 @@ function parseArgs() {
 // --- Markdown to HTML ---
 
 function markdownToHtml(md) {
+  // Ensure headings and horizontal rules are separated into their own blocks
+  md = md.replace(/^(#{1,4}\s+.+)$/gm, "\n\n$1\n\n");
+  md = md.replace(/^([-*_]{3,})$/gm, "\n\n$1\n\n");
+
   const blocks = md.split(/\n\n+/).filter((b) => b.trim());
 
   return blocks
     .map((block) => {
       let html = block.trim();
+
+      // Horizontal rule: --- or *** or ___
+      if (/^[-*_]{3,}$/.test(html)) {
+        return "<hr>";
+      }
+
+      // Headings: # text renders as h2, ## as h3, ### as h4 (h1 is the post title)
+      const headingMatch = html.match(/^(#{1,4})\s+(.+)$/);
+      if (headingMatch) {
+        const level = Math.min(headingMatch[1].length + 1, 4);
+        return `<h${level}>${headingMatch[2]}</h${level}>`;
+      }
 
       // Convert single newlines to <br>\n
       html = html.replace(/\n/g, "<br>\n");
@@ -89,13 +105,13 @@ function markdownToHtml(md) {
 }
 
 function extractTitle(md) {
-  const match = md.match(/^#\s+(.+)$/m);
+  const match = md.match(/^\s*#\s+(.+)$/m);
   if (match) return match[1].trim();
   return null;
 }
 
 function removeTitleFromContent(md) {
-  return md.replace(/^#\s+.+\n*/, "").trim();
+  return md.replace(/^\s*#\s+.+\n*/, "").trim();
 }
 
 // --- Slug ---
@@ -115,7 +131,8 @@ function slugify(title) {
 
 function generateExcerpt(md, maxLen = 280) {
   let text = md
-    .replace(/^#\s+.+\n*/m, "")
+    .replace(/^#{1,4}\s+.+$/gm, "") // strip all headings
+    .replace(/^[-*_]{3,}$/gm, "") // strip horizontal rules
     .replace(/\*\*(.+?)\*\*/g, "$1")
     .replace(/__(.+?)__/g, "$1")
     .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "$1")
