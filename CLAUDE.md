@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 This repository contains tools and content for Hugo's blog at https://rascunhos.blog. Includes:
+
 - Static HTML/CSS blog in `site/` folder
 - Playwright-based site analysis scripts for extracting design elements
 
@@ -13,6 +14,12 @@ This repository contains tools and content for Hugo's blog at https://rascunhos.
 ```bash
 # Install dependencies
 npm install
+
+# Publish a new blog post (creates HTML, updates index/pagination/RSS, commits & pushes)
+node publish.js "Post Title" content.md
+node publish.js content.md              # title from first # heading or filename
+node publish.js --dry-run content.md    # preview without changes
+node publish.js --no-push content.md    # commit but don't push
 
 # Run site analysis script (captures screenshots and extracts design info)
 node analyze-site.js
@@ -39,6 +46,7 @@ site/
 ## Analytics (GoatCounter)
 
 The site uses GoatCounter for privacy-friendly visitor tracking:
+
 - Dashboard: https://rascunhos.goatcounter.com
 - Script added to all HTML pages (no cookies, GDPR-compliant)
 - Tracks pageviews per page, referrers, and basic browser info
@@ -46,6 +54,7 @@ The site uses GoatCounter for privacy-friendly visitor tracking:
 ## Email Subscription (Buttondown)
 
 The site uses Buttondown (username: `hhmacedo`) for email subscriptions:
+
 - Footer forms submit to Buttondown's embed API
 - Floating subscribe buttons link to Buttondown's hosted page
 - Newsletters are sent manually via the Buttondown dashboard
@@ -55,19 +64,8 @@ The site uses Buttondown (username: `hhmacedo`) for email subscriptions:
 The site has an RSS feed (`site/feed.xml`) that readers can subscribe to directly.
 
 ### Adding New Posts to RSS:
-When publishing a new blog post, add a new `<item>` to `feed.xml`:
 
-```xml
-<item>
-  <title>Post Title</title>
-  <link>https://rascunhos.blog/posts/post-slug.html</link>
-  <guid>https://rascunhos.blog/posts/post-slug.html</guid>
-  <pubDate>Mon, 13 Jan 2025 00:00:00 +0000</pubDate>
-  <description><![CDATA[Post excerpt or summary here...]]></description>
-</item>
-```
-
-Add new items at the top of the `<channel>` section (after `<atom:link>`), and update `<lastBuildDate>` to the current date.
+The `publish.js` script handles RSS updates automatically. For manual edits, add a new `<item>` at the top of the `<channel>` section (after `<atom:link>`) and update `<lastBuildDate>`.
 
 ## Feature Backlog
 
