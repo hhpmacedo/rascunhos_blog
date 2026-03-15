@@ -475,6 +475,16 @@ function main() {
 
   // 2. Collect all existing posts and prepend the new one
   const allPosts = collectAllPosts();
+
+  // Guard against duplicates (e.g. if publish.js was run twice)
+  if (allPosts.some((p) => p.file === `posts/${postFile}`)) {
+    console.error(`Error: Post already listed in index: posts/${postFile}`);
+    console.error(
+      "Remove the duplicate entry from index.html before republishing.",
+    );
+    process.exit(1);
+  }
+
   const newPost = {
     date: formatDateISO(now),
     file: `posts/${postFile}`,
