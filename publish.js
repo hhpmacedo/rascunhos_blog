@@ -10,6 +10,11 @@ const PAGE_DIR = path.join(SITE_DIR, "page");
 const FEED_PATH = path.join(SITE_DIR, "feed.xml");
 const INDEX_PATH = path.join(SITE_DIR, "index.html");
 const POSTS_PER_PAGE = 10;
+// Homepage rhythm (option A): 1 featured + N recent (full excerpts) + archive
+// (one-line entries). Posts only ever move *down* this hierarchy as newer ones
+// are prepended, so an archive line never needs to expand back into an excerpt.
+const RECENT_COUNT = 2;
+const ARCHIVE_LINE_LEN = 78;
 
 // --- CLI ---
 
@@ -215,27 +220,65 @@ ${contentHtml}
 
 // --- Index & Pagination ---
 
-function parsePostItems(html) {
-  const items = [];
-  const regex =
-    /<li class="post-item" data-date="([^"]+)">\s*<h2 class="post-title">\s*<a href="[^"]*\/?(posts\/[^"]+)">([^<]+)<\/a>\s*<\/h2>\s*<p class="post-excerpt">\s*([\s\S]*?)<a href="[^"]*" class="read-more">ler mais<\/a>\s*<\/p>\s*<\/li>/g;
-  let match;
-  while ((match = regex.exec(html)) !== null) {
-    items.push({
-      date: match[1],
-      file: match[2],
-      title: match[3].trim(),
-      excerpt: match[4].trim(),
-    });
-  }
-  return items;
+function collapse(str) {
+  return str.replace(/\s+/g, " ").trim();
 }
 
+// Note: these regexes use `"\s*>` (not `">`) at tag boundaries and `</tag\s*>`
+// at closes, so they survive Prettier reflow that breaks long opening tags
+// across lines (e.g. `<a href="…"\n  >title</a\n>`). Without this tolerance a
+// reformatted file would silently drop posts.
+
+// Standard "recent" entry (also the legacy flat-list format on old pages).
+function parsePostItems(html) {
+  const regex =
+    /<li class="post-item" data-date="([^"]+)"\s*>\s*<h2 class="post-title"\s*>\s*<a href="[^"]*\/?(posts\/[^"]+)"\s*>([^<]+)<\/a\s*>\s*<\/h2\s*>\s*<p class="post-excerpt"\s*>\s*([\s\S]*?)<a href="[^"]*" class="read-more"\s*>ler mais<\/a\s*>\s*<\/p\s*>\s*<\/li\s*>/g;
+  return [...html.matchAll(regex)].map((m) => ({
+    date: m[1],
+    file: m[2],
+    title: collapse(m[3]),
+    excerpt: collapse(m[4]),
+  }));
+}
+
+// The single featured post at the top of the homepage.
+function parseFeaturedItem(html) {
+  const regex =
+    /<section class="post-featured" data-date="([^"]+)"\s*>[\s\S]*?<h2 class="post-title-featured"\s*>\s*<a href="[^"]*\/?(posts\/[^"]+)"\s*>([^<]+)<\/a\s*>\s*<\/h2\s*>\s*<p class="post-excerpt-featured"\s*>\s*([\s\S]*?)<a href="[^"]*" class="read-more"\s*>ler mais<\/a\s*>/;
+  const m = html.match(regex);
+  if (!m) return null;
+  return {
+    date: m[1],
+    file: m[2],
+    title: collapse(m[3]),
+    excerpt: collapse(m[4]),
+  };
+}
+
+// One-line archive entries (homepage "mais rascunhos" + standalone pages).
+function parseArchiveItems(html) {
+  const regex =
+    /<li data-date="([^"]+)"\s*>\s*<a href="[^"]*\/?(posts\/[^"]+)"\s*>\s*<span class="archive-item"\s*>\s*<span class="archive-title"\s*>([^<]+)<\/span\s*>\s*<span class="archive-line"\s*>\s*([\s\S]*?)<\/span\s*>/g;
+  return [...html.matchAll(regex)].map((m) => ({
+    date: m[1],
+    file: m[2],
+    title: collapse(m[3]),
+    line: collapse(m[4]),
+  }));
+}
+
+// Collect every listed post, newest first. Each file is one of two layouts:
+// the homepage (featured + recent + archive, in document order) or a plain
+// page (recent-style or archive-style). The parsers are disjoint by class, so
+// running all three over a file and concatenating preserves chronology.
 function collectAllPosts() {
   const posts = [];
 
   const indexHtml = fs.readFileSync(INDEX_PATH, "utf-8");
+  const featured = parseFeaturedItem(indexHtml);
+  if (featured) posts.push(featured);
   posts.push(...parsePostItems(indexHtml));
+  posts.push(...parseArchiveItems(indexHtml));
 
   if (fs.existsSync(PAGE_DIR)) {
     const pages = fs
@@ -246,23 +289,89 @@ function collectAllPosts() {
     for (const page of pages) {
       const pageHtml = fs.readFileSync(path.join(PAGE_DIR, page), "utf-8");
       posts.push(...parsePostItems(pageHtml));
+      posts.push(...parseArchiveItems(pageHtml));
     }
   }
 
   return posts;
 }
 
-function generatePostItemHtml(post, pathPrefix) {
+// An archive line is either a stored short line, or the head of a full excerpt
+// truncated at a word boundary. (Posts only move down, so we never need to
+// reconstruct a full excerpt from a short line.)
+function archiveLineFrom(post) {
+  if (post.line) return post.line;
+  const text = collapse(post.excerpt || "");
+  if (text.length <= ARCHIVE_LINE_LEN) return text;
+  const cut = text.lastIndexOf(" ", ARCHIVE_LINE_LEN);
+  return text.slice(0, cut > 0 ? cut : ARCHIVE_LINE_LEN) + "…";
+}
+
+// Featured post block (homepage top): large title + full excerpt.
+function generateFeaturedHtml(post, pathPrefix) {
   const href = `${pathPrefix}${post.file}`;
-  return `        <!-- Post -->
-        <li class="post-item" data-date="${post.date}">
-          <h2 class="post-title">
+  return `        <!-- Featured: latest post -->
+        <section class="post-featured" data-date="${post.date}">
+          <p class="kicker">o mais recente</p>
+          <h2 class="post-title-featured">
             <a href="${href}">${post.title}</a>
           </h2>
-          <p class="post-excerpt">
+          <p class="post-excerpt-featured">
             ${post.excerpt} <a href="${href}" class="read-more">ler mais</a>
           </p>
-        </li>`;
+        </section>`;
+}
+
+// Standard "recent" list entry: medium title + full excerpt.
+function generatePostItemHtml(post, pathPrefix) {
+  const href = `${pathPrefix}${post.file}`;
+  return `          <li class="post-item" data-date="${post.date}">
+            <h2 class="post-title">
+              <a href="${href}">${post.title}</a>
+            </h2>
+            <p class="post-excerpt">
+              ${post.excerpt} <a href="${href}" class="read-more">ler mais</a>
+            </p>
+          </li>`;
+}
+
+// One-line archive entry: bold title + italic teaser line.
+function generateArchiveItemHtml(post, pathPrefix) {
+  const href = `${pathPrefix}${post.file}`;
+  return `            <li data-date="${post.date}">
+              <a href="${href}">
+                <span class="archive-item">
+                  <span class="archive-title">${post.title}</span>
+                  <span class="archive-line">${archiveLineFrom(post)}</span>
+                </span>
+              </a>
+            </li>`;
+}
+
+// Shared footer (evolved design): wordmark, quiet note, typographic
+// underline form, and footer-only navigation.
+function generateFooterHtml(pathPrefix) {
+  return `  <footer class="site-footer">
+    <div class="footer-content">
+      <h2 class="footer-title">rascunhos</h2>
+      <p class="footer-tagline">uns v\u00e3o para o lixo, outros nem por isso</p>
+
+      <p class="footer-note">Os novos rascunhos chegam por email, sem pressa nem prazos.</p>
+      <div class="footer-subscribe">
+        <form class="uform" action="https://buttondown.email/api/emails/embed-subscribe/hhmacedo" method="post" target="popupwindow">
+          <input type="email" name="email" placeholder="o seu email aqui\u2026" required="required" />
+          <button type="submit">subscrever</button>
+        </form>
+      </div>
+
+      <div class="footer-bottom">
+        <a href="${pathPrefix}o-culpado/">autor</a>
+        <a href="https://buttondown.email/hhmacedo" target="_blank">subscrever</a>
+        <a href="${pathPrefix}feed.xml">rss</a>
+        <span class="right">rascunhos.blog</span>
+      </div>
+    </div>
+  </footer>`;
 }
 
 function generatePaginationHtml(currentPage, totalPages, isIndex) {
@@ -277,7 +386,7 @@ function generatePaginationHtml(currentPage, totalPages, isIndex) {
         : isIndex
           ? `page/${currentPage - 1}.html`
           : `${currentPage - 1}.html`;
-    parts.push(`        <a href="${prevHref}">P\u00e1gina anterior</a>`);
+    parts.push(`        <a href="${prevHref}">\u2190 p\u00e1gina anterior</a>`);
   }
 
   for (let i = 1; i <= totalPages; i++) {
@@ -298,13 +407,64 @@ function generatePaginationHtml(currentPage, totalPages, isIndex) {
     const nextHref = isIndex
       ? `page/${currentPage + 1}.html`
       : `${currentPage + 1}.html`;
-    parts.push(`        <a href="${nextHref}">P\u00e1gina seguinte</a>`);
+    parts.push(
+      `        <a href="${nextHref}" class="next">p\u00e1gina seguinte \u2192</a>`,
+    );
   }
 
   return `      <!-- Pagination -->
       <nav class="pagination">
 ${parts.join("\n")}
       </nav>`;
+}
+
+// Build the body of <main> for a given page of posts.
+//   Page 1 (homepage): 1 featured + RECENT_COUNT recent + the rest as archive.
+//   Pages 2+: a plain archive list of everything on the page.
+function generateMainContent(posts, isIndex) {
+  if (!isIndex) {
+    const archiveHtml = posts
+      .map((p) => generateArchiveItemHtml(p, "../"))
+      .join("\n");
+    return `        <section class="post-archive">
+          <p class="kicker">mais rascunhos</p>
+          <ul>
+${archiveHtml}
+          </ul>
+        </section>`;
+  }
+
+  const featured = posts[0];
+  const recent = posts.slice(1, 1 + RECENT_COUNT);
+  const archive = posts.slice(1 + RECENT_COUNT);
+  const blocks = [];
+
+  if (featured) blocks.push(generateFeaturedHtml(featured, ""));
+
+  if (recent.length) {
+    const recentHtml = recent
+      .map((p) => generatePostItemHtml(p, ""))
+      .join("\n\n");
+    blocks.push(`        <!-- Recent posts -->
+        <ul class="post-list">
+${recentHtml}
+        </ul>`);
+  }
+
+  if (archive.length) {
+    const archiveHtml = archive
+      .map((p) => generateArchiveItemHtml(p, ""))
+      .join("\n");
+    blocks.push(`        <!-- Archive: older posts, one line each -->
+        <section class="post-archive">
+          <p class="kicker">mais rascunhos</p>
+          <ul>
+${archiveHtml}
+          </ul>
+        </section>`);
+  }
+
+  return blocks.join("\n\n");
 }
 
 function generateIndexPage(posts, currentPage, totalPages) {
@@ -314,68 +474,39 @@ function generateIndexPage(posts, currentPage, totalPages) {
     ? " \u2013 porque a escrita nunca termina, porque fica sempre algo por dizer, por emendar,\u2026 ou talvez n\u00e3o."
     : ` \u2013 P\u00e1gina ${currentPage}`;
 
-  const postListHtml = posts
-    .map((p) => generatePostItemHtml(p, pathPrefix))
-    .join("\n\n");
+  const mainContent = generateMainContent(posts, isIndex);
 
   const paginationHtml =
     totalPages > 1
       ? "\n\n" + generatePaginationHtml(currentPage, totalPages, isIndex)
       : "";
 
-  return `<!DOCTYPE html>
+  return `<!doctype html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>rascunhos${titleSuffix}</title>
-  <link rel="stylesheet" href="${pathPrefix}css/styles.css">
-  <link rel="alternate" type="application/rss+xml" title="rascunhos" href="${pathPrefix}feed.xml">
+  <link rel="stylesheet" href="${pathPrefix}css/styles.css" />
+  <link rel="alternate" type="application/rss+xml" title="rascunhos" href="${pathPrefix}feed.xml" />
 </head>
 <body>
   <div class="site-container">
     <aside class="sidebar">
       <nav>
-        <div class="menu-icon"><span></span></div>
         <a href="${pathPrefix}index.html" class="site-title">rascunhos</a>
       </nav>
     </aside>
 
     <main class="main-content">
-      <ul class="post-list">
-${postListHtml}
-      </ul>
-${paginationHtml}
+${mainContent}${paginationHtml}
     </main>
   </div>
 
-  <!-- Floating Subscribe Button -->
-  <div class="subscribe-float">
-    <a href="https://buttondown.email/hhmacedo" target="_blank" class="subscribe-float-link">
-      <button type="button">Subscribe</button>
-    </a>
-  </div>
+${generateFooterHtml(pathPrefix)}
 
-  <footer class="site-footer">
-    <div class="footer-content">
-      <h2 class="footer-title">rascunhos</h2>
-      <p class="footer-tagline">uns v\u00e3o para o lixo, outros nem por isso</p>
-
-      <div class="footer-subscribe">
-        <form action="https://buttondown.email/api/emails/embed-subscribe/hhmacedo" method="post" target="popupwindow">
-          <input type="email" name="email" placeholder="o seu email aqui..." required>
-          <button type="submit">subscrever</button>
-        </form>
-      </div>
-
-      <div class="footer-bottom">
-        <a href="${pathPrefix}o-culpado/">autor</a>
-      </div>
-    </div>
-  </footer>
-<!-- GoatCounter Analytics -->
-<script data-goatcounter="https://rascunhos.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+  <!-- GoatCounter Analytics -->
+  <script data-goatcounter="https://rascunhos.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
 `;
@@ -464,16 +595,8 @@ function main() {
   console.log(`  Excerpt: ${excerpt.substring(0, 80)}...`);
   console.log("");
 
-  if (flags.dryRun) {
-    console.log("[DRY RUN] No files changed.");
-    return;
-  }
-
-  // 1. Create post file
-  fs.writeFileSync(postPath, postHtml);
-  console.log(`  Created: site/posts/${postFile}`);
-
-  // 2. Collect all existing posts and prepend the new one
+  // Collect all existing posts and prepend the new one. (Read-only — safe to
+  // run before the dry-run gate so the new rhythm/pagination can be previewed.)
   const allPosts = collectAllPosts();
 
   // Guard against duplicates (e.g. if publish.js was run twice)
@@ -493,26 +616,51 @@ function main() {
   };
   allPosts.unshift(newPost);
 
-  // 3. Paginate
+  // Paginate and render every page in memory.
   const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
-  const changedFiles = [`site/posts/${postFile}`];
-
-  // Write index.html (page 1)
-  const page1Posts = allPosts.slice(0, POSTS_PER_PAGE);
-  fs.writeFileSync(INDEX_PATH, generateIndexPage(page1Posts, 1, totalPages));
-  changedFiles.push("site/index.html");
-  console.log("  Updated: site/index.html");
-
-  // Write pagination pages
-  if (!fs.existsSync(PAGE_DIR)) fs.mkdirSync(PAGE_DIR, { recursive: true });
-
-  for (let p = 2; p <= totalPages; p++) {
+  const pages = [];
+  for (let p = 1; p <= totalPages; p++) {
     const start = (p - 1) * POSTS_PER_PAGE;
     const pagePosts = allPosts.slice(start, start + POSTS_PER_PAGE);
-    const pagePath = path.join(PAGE_DIR, `${p}.html`);
-    fs.writeFileSync(pagePath, generateIndexPage(pagePosts, p, totalPages));
-    changedFiles.push(`site/page/${p}.html`);
-    console.log(`  Updated: site/page/${p}.html`);
+    pages.push({
+      page: p,
+      target: p === 1 ? INDEX_PATH : path.join(PAGE_DIR, `${p}.html`),
+      label: p === 1 ? "site/index.html" : `site/page/${p}.html`,
+      html: generateIndexPage(pagePosts, p, totalPages),
+      count: pagePosts.length,
+    });
+  }
+
+  // Preview the homepage rhythm and pagination layout.
+  console.log(`  ${allPosts.length} posts across ${totalPages} page(s):`);
+  const featuredN = allPosts.length > 0 ? 1 : 0;
+  const recentN = Math.min(RECENT_COUNT, Math.max(0, allPosts.length - 1));
+  const archiveN = pages[0].count - featuredN - recentN;
+  console.log(
+    `    page 1: ${featuredN} featured + ${recentN} recent + ${archiveN} archive`,
+  );
+  for (let p = 2; p <= totalPages; p++) {
+    console.log(`    page ${p}: ${pages[p - 1].count} archive`);
+  }
+  console.log("");
+
+  if (flags.dryRun) {
+    console.log("[DRY RUN] No files changed.");
+    return;
+  }
+
+  // 1. Create the new post file
+  fs.writeFileSync(postPath, postHtml);
+  console.log(`  Created: site/posts/${postFile}`);
+
+  // 2. Write index + pagination pages
+  const changedFiles = [`site/posts/${postFile}`];
+  if (!fs.existsSync(PAGE_DIR)) fs.mkdirSync(PAGE_DIR, { recursive: true });
+
+  for (const pg of pages) {
+    fs.writeFileSync(pg.target, pg.html);
+    changedFiles.push(pg.label);
+    console.log(`  Updated: ${pg.label}`);
   }
 
   // Remove old pagination pages no longer needed
@@ -561,4 +709,17 @@ function main() {
   console.log(`Done! Post live at: https://rascunhos.blog/posts/${postFile}`);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  collectAllPosts,
+  generateIndexPage,
+  generateMainContent,
+  parseFeaturedItem,
+  parsePostItems,
+  parseArchiveItems,
+  POSTS_PER_PAGE,
+  RECENT_COUNT,
+};
