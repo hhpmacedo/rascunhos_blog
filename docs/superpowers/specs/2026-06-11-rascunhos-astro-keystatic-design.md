@@ -90,7 +90,10 @@ templates emit, so the same selectors apply:
   list, 10 per page, paginated identically.
 - **Post page:** `post-content`, `⁂` asterism breaks, prev/next `post-nav` (anterior/
   seguinte by date), per-post `post-subscribe`, floating subscribe button.
-- **Author page** (`o-culpado/`), **footer**, **GoatCounter**, **Buttondown** forms — all
+- **Author page:** a single page at `/o-culpado/` (the two legacy pages were merged on
+  `main`; `/autor.html` is now a redirect stub → `/o-culpado/`). Astro reproduces the merged
+  `o-culpado/index.html` and the `autor.html` → `/o-culpado/` redirect.
+- **footer**, **GoatCounter**, **Buttondown** forms, **favicon** (`favicon.ico`/`.svg`) —
   reproduced from the current markup.
 
 ## RSS
@@ -150,5 +153,5 @@ URLs + the feed are preserved.
 ## Open questions
 
 1. ~~Apex served by Pages or Vercel?~~ **Resolved: Vercel** (no DNS change at cutover).
-2. Keep `site/autor.html` (legacy author page alongside `o-culpado/`) or drop it? (Default:
-   reproduce both to preserve URLs unless you confirm `autor.html` is dead.)
+2. ~~Keep `autor.html` or drop it?~~ **Resolved: merged** into a single `/o-culpado/` page
+   (done on `main`); `/autor.html` redirects there. Astro reproduces that.
