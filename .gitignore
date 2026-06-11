@@ -3,3 +3,5 @@ dist/
 .vercel/
 .astro/
 .playwright-mcp/
+
+.DS_Store
