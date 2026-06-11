@@ -1,5 +1,7 @@
 import { defineConfig } from "astro/config";
 import vercel from "@astrojs/vercel";
+import react from "@astrojs/react";
+import keystatic from "@keystatic/astro";
 
 /** Rehype plugin: rewrite every <hr> in rendered markdown as <p class="asterism">⁂</p> */
 function rehypeAsterism() {
@@ -26,12 +28,16 @@ export default defineConfig({
   site: "https://rascunhos.blog",
   output: "static",
   adapter: vercel(),
+
   redirects: {
     "/autor.html": "/o-culpado/",
   },
+
   markdown: {
     syntaxHighlight: false,
     smartypants: false,
     rehypePlugins: [rehypeAsterism],
   },
+
+  integrations: [react(), keystatic()]
 });
