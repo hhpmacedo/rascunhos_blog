@@ -5,5 +5,5 @@ export default defineConfig({
   site: "https://rascunhos.blog",
   output: "static",
   adapter: vercel(),
-  markdown: { syntaxHighlight: false },
+  markdown: { syntaxHighlight: false, smartypants: false },
 });
