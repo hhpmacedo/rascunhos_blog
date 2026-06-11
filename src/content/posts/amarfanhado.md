@@ -1,5 +1,5 @@
 ---
-title: amarfanhado
+title: "amarfanhado"
 pubDate: 2026-02-27
 excerpt: "Isto não é um conto. É o relato do nosso encontro tal como me contaste. Estou sentado, mas as pernas não param. As mãos transpiram, ficam húmidas. Sinto as mandíbulas presas, rígidas. Estava à tua espera. Quando dei por ti, já estavas sentado. Inclino-me para trás e abro os olhos…"
 ---
@@ -30,12 +30,12 @@ Vamos, agarra-te à folha que dividiste ao meio. Preciso que estejas atento às 
 
 Inspira. Vamos.
 
-*"Acordo inconsciente.\
+_"Acordo inconsciente.\
 Um silvar de água a correr pelos canos entra-me na cabeça.\
 Com os olhos ainda fechados, tento descortinar de onde vem. Um autoclismo a encher, uma torneira aberta por trás da parede.\
-O som acorda uma dor de cabeça. Cerro o sobrolho. Hesito em abrir os olhos. Por entre as pálpebras percebo que não está escuro. Há sombras e raios de luz que entram e dançam.*
+O som acorda uma dor de cabeça. Cerro o sobrolho. Hesito em abrir os olhos. Por entre as pálpebras percebo que não está escuro. Há sombras e raios de luz que entram e dançam._
 
-*Procrastino o momento de encarar a realidade. Quero virar-lhe as costas. Viro-me na cama.\
+_Procrastino o momento de encarar a realidade. Quero virar-lhe as costas. Viro-me na cama.\
 É então que um desconforto agudo sobe pelo braço esquerdo. A mão direita apalpa e procura a dor. Sinto algo pegajoso mas seco. A mão é repelida com asco. Não consigo precisar. Os olhos recusam-se a abrir. A mão ganha coragem e avança agora com mais cautela. Sinto um plástico, uma película aderente, que está enrolada no antebraço.\
 Não faço ideia de onde vem nem por que está enrolada no braço. A estranheza é suficiente para que os olhos descolem. Queria adiar o momento, mas aquela coisa no braço força-me a encarar a luz.\
 Começo a desenrolar a película que envolve o braço. Com um esgar, tomo de novo consciência da dor aguda. Continuo a desenrolar cuidadosamente, descolando o plástico peganhento, volta após volta.\
@@ -45,7 +45,7 @@ Aperto o braço. Sinto dor. Aperto mais. E mais. Dor é a única coisa que quero
 Enquanto encaro esta visão que me parece irreal, ouço uma voz suave, rouca e firme:\
 "É tua. Agora ama-a como uma filha"\
 Não fazia ideia de quem falava, muito menos o que dizia.\
-Volto a encará-la. Não consigo desviar o olhar dela. Uma moldura escavada na pele. Um convite."*
+Volto a encará-la. Não consigo desviar o olhar dela. Uma moldura escavada na pele. Um convite."_
 
 Expira.
 
@@ -77,8 +77,8 @@ Tu dividiste uma folha e colocaste a minha ferida ao lado da tua.
 
 Estás aí? Vem comigo. Sinto que é agora.
 
-*"Levanto-me e vou à procura da voz. Saio do quarto. Um corredor. Escuro. Húmido.\
-Ao fundo, uma luz. Silêncio. Não sei onde está a voz. Silêncio. Uma luz ao fundo chama-me. Ouço um zumbido. A luz vem de uma porta mal fechada. A Porta. Ando ando ando e não chego à porta. Já não há porta. Cerro os olhos. Já não sei onde estou. A porta continua a puxar por mim. Está mal fechada. Volto a ouvir a voz. Não percebo. Está atrás de mim. A Porta está à minha frente ao fundo. Vou para a porta ou para a voz. Fico parado. Não sei onde estou. Nunca soube. Náusea. A cabeça pesa. Não. Lateja. A porta. A porta. A porta não está fechada. A voz puxa-me para trás. Paralisado. Latejo. A porta. A voz. Caio. Rastejo. Não consigo avançar. Não consigo. Não."*
+_"Levanto-me e vou à procura da voz. Saio do quarto. Um corredor. Escuro. Húmido.\
+Ao fundo, uma luz. Silêncio. Não sei onde está a voz. Silêncio. Uma luz ao fundo chama-me. Ouço um zumbido. A luz vem de uma porta mal fechada. A Porta. Ando ando ando e não chego à porta. Já não há porta. Cerro os olhos. Já não sei onde estou. A porta continua a puxar por mim. Está mal fechada. Volto a ouvir a voz. Não percebo. Está atrás de mim. A Porta está à minha frente ao fundo. Vou para a porta ou para a voz. Fico parado. Não sei onde estou. Nunca soube. Náusea. A cabeça pesa. Não. Lateja. A porta. A porta. A porta não está fechada. A voz puxa-me para trás. Paralisado. Latejo. A porta. A voz. Caio. Rastejo. Não consigo avançar. Não consigo. Não."_
 
 Foda-se.
 
