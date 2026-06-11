@@ -26,6 +26,9 @@ export default defineConfig({
   site: "https://rascunhos.blog",
   output: "static",
   adapter: vercel(),
+  redirects: {
+    "/autor.html": "/o-culpado/",
+  },
   markdown: {
     syntaxHighlight: false,
     smartypants: false,
