@@ -1,0 +1,71 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+
+export async function getStaticPaths() {
+  const POSTS_PER_PAGE = 10;
+  const posts = (await getCollection("posts", ({ data }) => !data.draft))
+    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
+
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => i + 2).map((page) => ({
+    params: { page: String(page) },
+    props: {
+      items: posts.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE),
+      page,
+      totalPages,
+    },
+  }));
+}
+
+const { items, page, totalPages } = Astro.props;
+
+const href = (p: { id: string }) => `/posts/${p.id}.html`;
+
+function pageHref(n: number) {
+  return n === 1 ? "/" : `/page/${n}.html`;
+}
+---
+<Base title={`rascunhos – Página ${page}`}>
+  <div class="site-container">
+    <aside class="sidebar">
+      <nav>
+        <a href="/" class="site-title">rascunhos</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <section class="post-archive">
+        <p class="kicker">mais rascunhos</p>
+        <ul>
+          {items.map((p) => (
+            <li data-date={p.data.pubDate.toISOString().slice(0, 10)}>
+              <a href={href(p)}>
+                <span class="archive-item">
+                  <span class="archive-title">{p.data.title}</span>
+                  <span class="archive-line">{p.data.excerpt}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <!-- Pagination -->
+      <nav class="pagination">
+        {page > 1 && (
+          <a href={pageHref(page - 1)}>← página anterior</a>
+        )}
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+          n === page
+            ? <span class="current">{n}</span>
+            : <a href={pageHref(n)}>{n}</a>
+        ))}
+        {page < totalPages && (
+          <a href={pageHref(page + 1)} class="next">página seguinte →</a>
+        )}
+      </nav>
+    </main>
+  </div>
+</Base>
