@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- rascunhos — the ⁂ asterism (section-break motif), ink on warm paper -->
+  <rect width="32" height="32" fill="#F8F7F5"/>
+  <g fill="#191919">
+    <circle cx="16" cy="10" r="3.4"/>
+    <circle cx="10.5" cy="21" r="3.4"/>
+    <circle cx="21.5" cy="21" r="3.4"/>
+  </g>
+</svg>

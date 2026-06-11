@@ -205,6 +205,8 @@ function generatePostHtml(title, contentHtml, date, anterior) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)} \u2013 rascunhos</title>
   <link rel="stylesheet" href="../css/styles.css">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate" type="application/rss+xml" title="rascunhos" href="../feed.xml">
 </head>
 <body>
@@ -538,6 +540,8 @@ function generateIndexPage(posts, currentPage, totalPages) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>rascunhos${titleSuffix}</title>
   <link rel="stylesheet" href="${pathPrefix}css/styles.css" />
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="alternate" type="application/rss+xml" title="rascunhos" href="${pathPrefix}feed.xml" />
 </head>
 <body>
