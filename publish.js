@@ -75,9 +75,9 @@ function markdownToHtml(md) {
     .map((block) => {
       let html = block.trim();
 
-      // Horizontal rule: --- or *** or ___
+      // Section break: --- or *** or ___ renders as an ⁂ asterism (v2 design)
       if (/^[-*_]{3,}$/.test(html)) {
-        return "<hr>";
+        return '<p class="asterism">⁂</p>';
       }
 
       // Headings: # text renders as h2, ## as h3, ### as h4 (h1 is the post title)
@@ -155,7 +155,48 @@ function generateExcerpt(md, maxLen = 280) {
 
 // --- Post HTML Template ---
 
-function generatePostHtml(title, contentHtml, date) {
+// One side of the anterior/seguinte nav (or an empty spacer to keep the
+// remaining link aligned). Titles use the post's display title, like the index.
+function postNavLink(post, cls, label) {
+  const href = post.file.replace(/^posts\//, "");
+  return `        <a href="${href}" class="${cls}">
+          <p class="post-nav-label">${label}</p>
+          <p class="post-nav-title">${post.title}</p>
+        </a>`;
+}
+
+// Inner of <nav class="post-nav">: anterior (older) on the left, seguinte
+// (newer) on the right. A missing neighbour becomes an empty <span> spacer.
+function generatePostNavInner(anterior, seguinte) {
+  const left = anterior
+    ? postNavLink(anterior, "prev-post", "\u2190 anterior")
+    : "        <span></span>";
+  const right = seguinte
+    ? postNavLink(seguinte, "next-post", "seguinte \u2192")
+    : "        <span></span>";
+  return `${left}\n${right}`;
+}
+
+// Rewrite a neighbour post's nav in place (used when a newer post is published,
+// so the previously-newest post gains its "seguinte \u2192" link). Returns the
+// repo-relative path if it changed, else null.
+function regenerateNeighborNav(neighbor, anterior, seguinte) {
+  const rel = neighbor.file.replace(/^posts\//, "");
+  const file = path.join(POSTS_DIR, rel);
+  if (!fs.existsSync(file)) return null;
+  let html = fs.readFileSync(file, "utf-8");
+  if (!/<nav class="post-nav">/.test(html)) return null; // not yet migrated
+  const navBlock = `<nav class="post-nav">
+${generatePostNavInner(anterior, seguinte)}
+      </nav>`;
+  html = html.replace(/<nav class="post-nav">[\s\S]*?<\/nav>/, navBlock);
+  fs.writeFileSync(file, html);
+  return `site/posts/${rel}`;
+}
+
+// v2 single-post page. `anterior` is the previously-newest post (or null for the
+// very first post); a freshly published post is the newest, so it has no seguinte.
+function generatePostHtml(title, contentHtml, date, anterior) {
   const dateStr = formatDateISO(date);
   return `<!DOCTYPE html>
 <html lang="pt">
@@ -171,7 +212,6 @@ function generatePostHtml(title, contentHtml, date) {
   <div class="site-container">
     <aside class="sidebar">
       <nav>
-        <div class="menu-icon"><span></span></div>
         <a href="../index.html" class="site-title">rascunhos</a>
       </nav>
     </aside>
@@ -182,15 +222,21 @@ function generatePostHtml(title, contentHtml, date) {
 
 ${contentHtml}
 
+        <p class="post-end">\u2014 fim \u2014</p>
       </article>
-    </main>
-  </div>
 
-  <!-- Floating Subscribe Button -->
-  <div class="subscribe-float">
-    <a href="https://buttondown.email/hhmacedo" target="_blank" class="subscribe-float-link">
-      <button type="button">Subscribe</button>
-    </a>
+      <nav class="post-nav">
+${generatePostNavInner(anterior, null)}
+      </nav>
+
+      <div class="post-subscribe">
+        <p>Se este rascunho te disse algo, os pr\u00f3ximos chegam por email.</p>
+        <form class="uform" action="https://buttondown.email/api/emails/embed-subscribe/hhmacedo" method="post" target="popupwindow">
+          <input type="email" name="email" placeholder="o seu email aqui\u2026" required="required" />
+          <button type="submit">subscrever</button>
+        </form>
+      </div>
+    </main>
   </div>
 
   <footer class="site-footer">
@@ -198,15 +244,19 @@ ${contentHtml}
       <h2 class="footer-title">rascunhos</h2>
       <p class="footer-tagline">uns v\u00e3o para o lixo, outros nem por isso</p>
 
+      <p class="footer-note">Os novos rascunhos chegam por email, sem pressa nem prazos.</p>
       <div class="footer-subscribe">
-        <form action="https://buttondown.email/api/emails/embed-subscribe/hhmacedo" method="post" target="popupwindow">
-          <input type="email" name="email" placeholder="o seu email aqui..." required>
+        <form class="uform" action="https://buttondown.email/api/emails/embed-subscribe/hhmacedo" method="post" target="popupwindow">
+          <input type="email" name="email" placeholder="o seu email aqui\u2026" required="required" />
           <button type="submit">subscrever</button>
         </form>
       </div>
 
       <div class="footer-bottom">
+        <a href="../index.html">in\u00edcio</a>
         <a href="../o-culpado/">autor</a>
+        <a href="../feed.xml">rss</a>
+        <span class="right">rascunhos.blog</span>
       </div>
     </div>
   </footer>
@@ -586,7 +636,6 @@ function main() {
 
   const contentHtml = markdownToHtml(content);
   const excerpt = generateExcerpt(md);
-  const postHtml = generatePostHtml(title, contentHtml, now);
 
   console.log(`Publishing: "${title}"`);
   console.log(`  Slug: ${slug}`);
@@ -615,6 +664,11 @@ function main() {
     excerpt: excerpt,
   };
   allPosts.unshift(newPost);
+
+  // The new post is the newest: its "anterior" (older) neighbour is whatever
+  // was newest before; it has no "seguinte" yet.
+  const anterior = allPosts.length > 1 ? allPosts[1] : null;
+  const postHtml = generatePostHtml(title, contentHtml, now, anterior);
 
   // Paginate and render every page in memory.
   const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
@@ -661,6 +715,17 @@ function main() {
     fs.writeFileSync(pg.target, pg.html);
     changedFiles.push(pg.label);
     console.log(`  Updated: ${pg.label}`);
+  }
+
+  // 3. Patch the previously-newest post so it points "seguinte →" at the new
+  // post (its own "anterior" is unchanged).
+  if (anterior) {
+    const prevAnterior = allPosts.length > 2 ? allPosts[2] : null;
+    const navChanged = regenerateNeighborNav(anterior, prevAnterior, newPost);
+    if (navChanged) {
+      changedFiles.push(navChanged);
+      console.log(`  Updated nav: ${navChanged}`);
+    }
   }
 
   // Remove old pagination pages no longer needed
@@ -717,6 +782,10 @@ module.exports = {
   collectAllPosts,
   generateIndexPage,
   generateMainContent,
+  generatePostHtml,
+  generatePostNavInner,
+  regenerateNeighborNav,
+  markdownToHtml,
   parseFeaturedItem,
   parsePostItems,
   parseArchiveItems,
