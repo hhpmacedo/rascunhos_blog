@@ -1,7 +1,7 @@
 ---
 title: "o elixir da curiosidade"
 pubDate: 2025-02-10
-excerpt: "Discordo. Contraponho. Rebato. Contradigo.&nbsp; Porque assumo que te vou…"
+excerpt: "Discordo. Contraponho. Rebato. Contradigo. Porque assumo que te vou…"
 ---
 
 Discordo. Contraponho. Rebato. Contradigo. 

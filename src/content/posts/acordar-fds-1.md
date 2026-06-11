@@ -34,4 +34,4 @@ Não fazia ideia de quem falava e muito menos percebia o que dizia.
 
 ---
 
-    PS: este texto é parte integrante de um projecto de ficção com o nome provisório "FDS"
+<pre class="wp-block-code"><code><mark style="background-color:#F1EEE9" class="has-inline-color">PS: este texto é parte integrante de um projecto de ficção com o nome provisório "FDS"</mark></code></pre>

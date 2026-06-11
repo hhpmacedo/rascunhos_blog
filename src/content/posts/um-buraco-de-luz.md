@@ -1,7 +1,7 @@
 ---
 title: "um buraco de luz"
 pubDate: 2025-05-03
-excerpt: "Há quem esteja num buraco e pense que viu a luz&nbsp; Há outros que cientes do…"
+excerpt: "Há quem esteja num buraco e pense que viu a luz Há outros que cientes do…"
 ---
 
 Há quem esteja num buraco e pense que viu a luz 

@@ -9,9 +9,26 @@ td.addRule("asterism", {
   filter: (n) => n.nodeName === "P" && n.getAttribute("class") === "asterism",
   replacement: () => "\n\n---\n\n",
 });
-// PRESERVE raw WordPress HTML blocks (code blocks with <mark>, etc.) verbatim -
-// turndown would otherwise mangle <pre class="wp-block-code"> / <mark> and lose fidelity.
-td.keep(["pre", "mark"]);
+// PRESERVE raw WordPress code blocks (<pre class="wp-block-code"> with <mark>, etc.)
+// verbatim. turndown's built-in codeBlock rule would otherwise strip the <mark>
+// highlight and the wp-block-code class, so emit the node's outerHTML directly.
+// (td.keep is a no-op here because codeBlock fires first on <pre><code>.)
+td.addRule("rawPre", {
+  filter: "pre",
+  replacement: (_content, node) => "\n\n" + node.outerHTML + "\n\n",
+});
+td.keep(["mark"]);
+
+// Decode the handful of HTML entities that appear in listing excerpt text, so the
+// frontmatter excerpt is plain text (otherwise e.g. &nbsp; double-escapes in <meta>).
+const decodeEntities = (s) =>
+  s
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&amp;/g, "&");
 
 async function excerptMap() {
   const map = {};
@@ -24,7 +41,7 @@ async function excerptMap() {
     const reExcerpt = /<a\s+href="[^"]*\/?posts\/([^"]+)\.html"[\s\S]*?<\/a\s*>\s*<\/h2>\s*<p class="post-(?:excerpt|excerpt-featured)">\s*([\s\S]*?)\s*<a[^>]+class="read-more"/g;
     let m;
     while ((m = reExcerpt.exec(html))) {
-      map[m[1]] = m[2].replace(/\s+/g, " ").trim();
+      map[m[1]] = decodeEntities(m[2]).replace(/\s+/g, " ").trim();
     }
     // 2. Archive-line: each <li> contains <a href="...posts/<slug>.html"> and
     //    <span class="archive-line">text</span>; extract them together from each <li>
@@ -34,7 +51,7 @@ async function excerptMap() {
       const slugM = liHtml.match(/href="[^"]*\/?posts\/([^"]+)\.html"/);
       const lineM = liHtml.match(/<span\s+class="archive-line"[\s\S]*?>([\s\S]*?)<\/span/);
       if (slugM && lineM && !map[slugM[1]]) {
-        map[slugM[1]] = lineM[1].replace(/\s+/g, " ").trim();
+        map[slugM[1]] = decodeEntities(lineM[1]).replace(/\s+/g, " ").trim();
       }
     }
   }

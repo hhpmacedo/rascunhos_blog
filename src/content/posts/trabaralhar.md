@@ -1,7 +1,7 @@
 ---
 title: "trabaralhar"
 pubDate: 2025-06-13
-excerpt: "Quando achas que estás a trabalhar.&nbsp;Mas só baralhas e voltas a dar.&nbsp;…"
+excerpt: "Quando achas que estás a trabalhar. Mas só baralhas e voltas a dar. …"
 ---
 
 Quando achas que estás a trabalhar. \
