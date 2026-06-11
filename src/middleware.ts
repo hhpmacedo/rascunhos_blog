@@ -7,12 +7,15 @@ import { defineMiddleware } from "astro:middleware";
 // redirect_uri uses the real public domain (rascunhos.blog).
 // Workaround for https://github.com/Thinkmill/keystatic/issues/1022
 export const onRequest = defineMiddleware((context, next) => {
-  const path = context.url.pathname;
-  const isOAuthRoute =
-    path.startsWith("/api/keystatic/github/oauth/") ||
-    path.startsWith("/api/keystatic/github/login");
+  // Only the LOGIN route needs the host fix (it builds the OAuth redirect_uri from
+  // the request origin). The oauth/callback route reads `code` from the query and
+  // exchanges it server-side — it needs no host correction, so we leave it untouched
+  // to avoid any chance of disturbing the request.
+  const needsHostFix = context.url.pathname.startsWith(
+    "/api/keystatic/github/login",
+  );
 
-  if (isOAuthRoute) {
+  if (needsHostFix) {
     const host = context.request.headers.get("x-forwarded-host");
     const proto = context.request.headers.get("x-forwarded-proto");
     if (host && proto) {
